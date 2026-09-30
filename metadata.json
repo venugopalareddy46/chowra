@@ -1,0 +1,6 @@
+{
+  "name": "Chowra Logistics and Couriers Limited",
+  "description": "Enterprise logistics, domestic & international courier services, express delivery, multimodal freight, and supply chain solutions by Chowra Logistics and Couriers Limited.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

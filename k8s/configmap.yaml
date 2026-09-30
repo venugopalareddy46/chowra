@@ -1,0 +1,24 @@
+# =========================================================================
+# Chowra Logistics and Couriers Limited — Kubernetes ConfigMap
+# Architect: Chowra Engineering Team
+# =========================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chowra-logistics-config
+  namespace: logistics-production
+  labels:
+    app.kubernetes.io/name: chowra-logistics
+    app.kubernetes.io/part-of: chowra-dispatch-platform
+    app.kubernetes.io/managed-by: helm
+    chowra.com/environment: production
+data:
+  NODE_ENV: "production"
+  VITE_APP_URL: "https://chowra.work.gd"
+  APP_PORT: "3000"
+  CONTROL_TOWER_REGION: "ap-south-1"
+  PRIMARY_AIR_HUB: "BOM-01"
+  GEO_ENGINE_VERSION: "v2.4.0"
+  CHOWRA_CORE_ARCHITECT: "Chowra Engineering Team"
+  TELEMETRY_REFRESH_INTERVAL_MS: "15000"

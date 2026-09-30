@@ -1,0 +1,156 @@
+# =========================================================================
+# Chowra Logistics and Couriers Limited — Production CI/CD Workflow
+# Path: .github/workflows/deploy.yml
+# CI/CD and container build configuration
+# =========================================================================
+
+name: Production CI/CD Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/**'
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Target Deployment Environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - 'production'
+          - 'staging'
+      image_tag_override:
+        description: 'Manual Docker Image Tag (optional)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '22'
+  KUBE_NAMESPACE: 'logistics-production'
+
+jobs:
+  # =======================================================================
+  # Stage 1: Build & Quality Testing
+  # =======================================================================
+  test-and-lint:
+    name: Build, Lint & Type Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime (${{ env.NODE_VERSION }})
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Verified Dependencies
+        run: npm ci
+
+      - name: Static Analysis & TypeScript Type Check
+        run: npm run lint
+
+      - name: Compile Production Web Bundle
+        run: npm run build
+
+      - name: Archive Production Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: dist/
+          retention-days: 5
+
+  # =======================================================================
+  # Stage 2: Containerize & Push to Registry
+  # =======================================================================
+  build-and-push-container:
+    name: Docker Build & Push to Container Registry
+    needs: test-and-lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+      image_uri: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Download Pre-compiled Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist/
+
+      - name: Set up QEMU (Multi-platform emulation)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry (${{ env.REGISTRY }})
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker Metadata (Tags & Labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha,format=short
+          labels: |
+            org.opencontainers.image.title=Chowra Logistics and Couriers Limited
+            org.opencontainers.image.description=Enterprise multimodal logistics, courier tracking, and dispatch telemetry engine
+            org.opencontainers.image.vendor=Chowra Logistics and Couriers Limited
+            org.opencontainers.image.authors=Chowra Logistics and Couriers Limited
+            chowra.com/environment=production
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # =======================================================================
+  # Stage 3: Kubernetes Manifest Validation
+  # =======================================================================
+  validate-kubernetes:
+    name: Validate Kubernetes Manifests
+    needs: build-and-push-container
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Validate Kubernetes Manifests
+        run: |
+          kubectl apply --dry-run=client -f k8s/
+          echo "Kubernetes manifests validated for namespace ${{ env.KUBE_NAMESPACE }}."

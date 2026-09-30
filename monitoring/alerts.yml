@@ -1,0 +1,35 @@
+# =========================================================================
+# Chowra Logistics and Couriers Limited — Alertmanager Alert Rules
+# Monitoring configuration for Chowra Logistics
+# =========================================================================
+
+groups:
+  - name: chowra_logistics_alerts
+    rules:
+      - alert: ChowraWebPodDown
+        expr: up{job="chowra-web"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          owner: dispatch-sre-team
+        annotations:
+          summary: "Chowra Dispatch Web instance {{ $labels.instance }} down"
+          description: "Production web endpoint has been unreachable for > 1 minute. Escalate to the project operations team."
+
+      - alert: HighHttpErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100 > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Elevated HTTP 5xx errors (> 2%) on Chowra Dispatch Platform"
+          description: "Error rate is {{ $value }}% on service {{ $labels.app }}."
+
+      - alert: SlaDeliveryDelayRisk
+        expr: chowra_sla_breach_risk_count > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Delivery commitment SLA risk detected on linehaul corridor"
+          description: "Multiple active consignments experiencing weather or transit bottlenecks."

@@ -1,0 +1,22 @@
+# =========================================================================
+# Chowra Logistics and Couriers Limited — Kubernetes Service
+# Architect: Chowra Engineering Team
+# =========================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: chowra-logistics-svc
+  namespace: logistics-production
+  labels:
+    app.kubernetes.io/name: chowra-logistics
+    chowra.com/environment: production
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: chowra-logistics

@@ -1,0 +1,96 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "title": "Real-Time Active Consignments Tracked",
+      "type": "stat",
+      "targets": [
+        { "expr": "sum(chowra_active_shipments_total)", "legendFormat": "Active Shipments" }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "unit": "none" }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "title": "On-Time Linehaul SLA Rate",
+      "type": "stat",
+      "targets": [
+        { "expr": "chowra_delivery_sla_percentage", "legendFormat": "SLA Compliance" }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "unit": "percent", "min": 90, "max": 100 }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "title": "HTTP 99th Percentile Response Latency",
+      "type": "stat",
+      "targets": [
+        { "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) * 1000", "legendFormat": "P99 Latency" }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "thresholds" }, "unit": "ms" }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "title": "Telemetry Socket Connections",
+      "type": "stat",
+      "targets": [
+        { "expr": "sum(chowra_telemetry_clients_connected)", "legendFormat": "Connected Clients" }
+      ],
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "none" }
+      }
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 5,
+      "title": "Consignment Throughput by Air & Surface Hub",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum by (hub) (rate(chowra_scans_total[5m]))", "legendFormat": "{{hub}}" }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 6,
+      "title": "System Memory & CPU Allocation (Kubernetes)",
+      "type": "timeseries",
+      "targets": [
+        { "expr": "sum(container_memory_working_set_bytes{container=\"chowra-web\"})", "legendFormat": "Memory Working Set" }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["chowra", "logistics", "telemetry", "production"],
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Chowra Logistics Control Tower — SRE Telemetry Dashboard",
+  "uid": "chowra-control-tower",
+  "version": 1,
+  "description": "Production observability dashboard for Chowra Logistics. Demo observability dashboard for the Chowra Logistics application."
+}

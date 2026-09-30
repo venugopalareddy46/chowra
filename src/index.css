@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+@layer base {
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    overflow-x: clip;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: clip;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  #root {
+    min-height: 100vh;
+    width: 100%;
+    max-width: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  img,
+  video,
+  svg {
+    max-width: 100%;
+  }
+}
+
+
+.font-display {
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+.font-data {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes drawCheckmark {
+  0% {
+    stroke-dashoffset: 60;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes spinGradient {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 191, 114, 0.3), 0 0 30px rgba(168, 235, 18, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 191, 114, 0.6), 0 0 60px rgba(168, 235, 18, 0.4);
+    transform: scale(1.03);
+  }
+}
+
+.animate-draw-check {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: drawCheckmark 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.15s;
+}
+
+.animate-spin-gradient {
+  animation: spinGradient 1.2s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.2s ease-in-out infinite;
+}
+
+/* Subtle flowing dash movement between pickup and destination hubs */
+@keyframes flowTransitPath {
+  0% {
+    stroke-dashoffset: 48;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes reverseFlowTransitPath {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 48;
+  }
+}
+
+@keyframes beamSweep {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.2;
+    transform: scale(0.98);
+  }
+}
+
+.animate-flow-transit {
+  animation: flowTransitPath 1.6s linear infinite;
+}
+
+.animate-flow-fast {
+  animation: flowTransitPath 0.9s linear infinite;
+}
+
+.animate-beam-sweep {
+  animation: beamSweep 2.5s ease-in-out infinite;
+}
+
+/* Decreased placeholder opacity globally for soft, subtle input guidance */
+::placeholder,
+input::placeholder,
+textarea::placeholder {
+  opacity: 0.42 !important;
+}
+
+/* Specific styling for dark themed inputs */
+.bg-slate-950::placeholder,
+.bg-slate-900::placeholder {
+  opacity: 0.38 !important;
+}

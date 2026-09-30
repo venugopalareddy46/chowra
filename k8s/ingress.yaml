@@ -1,0 +1,45 @@
+# =========================================================================
+# Chowra Logistics and Couriers Limited — Kubernetes Ingress
+# Architect: Chowra Engineering Team
+# =========================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chowra-logistics-ingress
+  namespace: logistics-production
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    chowra.com/environment: "production"
+spec:
+  tls:
+    - hosts:
+        - chowra.work.gd
+        - www.chowra.work.gd
+      secretName: chowra-logistics-tls-cert
+  rules:
+    - host: chowra.work.gd
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chowra-logistics-svc
+                port:
+                  number: 80
+    - host: www.chowra.work.gd
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chowra-logistics-svc
+                port:
+                  number: 80

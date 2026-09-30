@@ -1,0 +1,57 @@
+# =========================================================================
+# Chowra Logistics and Couriers Limited — Local Production Stack
+# Docker Compose deployment configuration
+# =========================================================================
+
+version: '3.8'
+
+services:
+  chowra-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: chowra-logistics:latest
+    container_name: chowra_logistics_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - CHOWRA_DISPATCH_TOWER=ACTIVE
+      - CHOWRA_ENVIRONMENT=demo
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    networks:
+      - chowra-net
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: chowra_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - chowra-net
+
+networks:
+  chowra-net:
+    driver: bridge
